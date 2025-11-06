@@ -1,0 +1,12 @@
+const { connect, set } = require('mongoose');
+
+module.exports = async () => {
+    try {
+        set("strictQuery", true);
+        await connect(process.env.MONGO).then(() => {
+            console.log("🍃 Conectado a la DB");
+        });
+    } catch (error) {
+        console.log(error);
+    }
+}

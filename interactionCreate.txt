@@ -1,0 +1,26 @@
+const { InteractionType, EmbedBuilder } = require('discord.js')
+
+module.exports = async (client, interaction) => {
+    if (interaction.type == InteractionType.ApplicationCommand) {
+        const cmd = client.commands.get(interaction.commandName);
+        if (!cmd) return;
+        const user = interaction.guild.members.cache.get(interaction.user.id);
+
+        try {
+            if (!user.permissions.has(cmd.permissions || [])) return interaction.reply({ embeds: [new EmbedBuilder().setTimestamp().setColor("Red").setTitle(`❌ Permisos insuficientes`).setDescription(`Para usar este comando, debes tener los siguientes permisos:\n\`\`\`${new PermissionsBitField(cmd.permissions).toArray().join("\n")}\`\`\``).setThumbnail(client.user.displayAvatarURL())] });
+            if (!interaction.guild.members.me.permissions.has(cmd.botp || [])) return interaction.reply({ embeds: [new EmbedBuilder().setTimestamp().setColor("Red").setTitle(`❌ Permisos del bot insuficientes`).setDescription(`Para que el bot haga este comando, debe tener los siguientes permisos:\n\`\`\`${new PermissionsBitField(cmd.permissions).toArray().join("\n")}\`\`\``).setThumbnail(client.user.displayAvatarURL())] });
+            if (cmd.ownerOnly && process.env.OWNER !== interaction.user.id) return interaction.reply({ embeds: [new EmbedBuilder().setDescription(`⚠ ¡Comando exclusivo del dueño del bot!`).setColor("Yellow")] });
+            await cmd.run(client, interaction);
+        } catch (error) {
+            console.log(error);
+        }
+
+    }
+    if (interaction.type == InteractionType.ApplicationCommandAutocomplete) {
+        let getCmd = client.commands.get(interaction.commandName);
+        if (!getCmd) return;
+        try {
+            await getCmd.autocomplete(client, interaction)
+        } catch (error) { console.log(error) }
+    }
+}

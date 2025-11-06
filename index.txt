@@ -1,0 +1,15 @@
+const { Client, Collection, Partials } = require('discord.js');
+const { botCore } = require('./src/utils/misc/botCore');
+const client = new Client({
+    intents: [130815],
+    partials: [Partials.Channel, Partials.Message, Partials.GuildMember, Partials.Reaction]
+});
+require('dotenv').config();
+
+client.commands = new Collection();
+
+try {
+    new botCore(client);
+} catch (error) {
+    console.log(error);
+}

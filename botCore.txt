@@ -1,0 +1,62 @@
+const fs = require('fs');
+const { REST, Routes } = require('discord.js')
+
+class botCore {
+    constructor(client) {
+        this.client = client;
+
+        process.on('uncaughtException', error => {
+            console.log((`${error.message} ${error.stack}`))
+        });
+        this.client.on("shardError", error => {
+            console.log((`${error.message} ${error.stack}`))
+        });
+
+
+        fs.readdir("./src/events", (err, files) => {
+            if (err) console.log(err);
+            files.forEach((f) => {
+                if (!f.endsWith(".js")) return;
+                let eName = f.split(".")[0];
+                let event = require(`../../events/${f}`);
+                this.client.on(eName, event.bind(null, client));
+                console.log(`¡${f} fue cargado!`)
+            });
+        });
+
+        fs.readdirSync("./src/commands").forEach(cat => {
+            let cmd = fs.readdirSync(`./src/commands/${cat}`).filter((c) => c.endsWith(".js"));
+            for (const commands of cmd) {
+                let cmdFile = require(`../../commands/${cat}/${commands}`);
+                this.client.commands.set(cmdFile.data.name, cmdFile);
+            }
+        });
+
+        this.loadSlash(process.env.TOKEN, process.env.ID);
+        this.client.login(process.env.TOKEN);
+    }
+
+    /**
+     * @param {String} token The bot token
+     * @param {String} id The bot Id
+     */
+    async loadSlash(token, id) {
+        var cmds = [];
+        fs.readdirSync("./src/commands").forEach(category => {
+            const comm = fs.readdirSync(`./src/commands/${category}`).filter(f => f.endsWith(".js"));
+            for (const command of comm) {
+                let commandFile = require(`../../commands/${category}/${command}`);
+                cmds.push(commandFile.data.toJSON());
+            }
+        }); const rest = new REST({ version: "10" }).setToken(token);
+        Slash();
+        async function Slash() {
+            try {
+                rest.put(Routes.applicationCommands(id), { body: cmds });
+                console.log((`${cmds.length} Commands loaded`))
+            } catch (error) { new SendLogs("ERROR", `${error.message} | ${error.stack}`); }
+        }
+    }
+}
+
+module.exports = { botCore }
