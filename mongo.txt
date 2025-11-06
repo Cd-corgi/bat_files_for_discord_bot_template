@@ -3,7 +3,7 @@ const { connect, set } = require('mongoose');
 module.exports = async () => {
     try {
         set("strictQuery", true);
-        await connect(process.env.MONGO).then(() => {
+        await connect(process.env.MONGO_URI).then(() => {
             console.log("🍃 Conectado a la DB");
         });
     } catch (error) {
