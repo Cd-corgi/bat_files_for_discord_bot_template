@@ -13,12 +13,12 @@ class botCore {
         });
 
 
-        fs.readdir("./src/events", (err, files) => {
+        fs.readdir("./src/events/client", (err, files) => {
             if (err) console.log(err);
             files.forEach((f) => {
                 if (!f.endsWith(".js")) return;
                 let eName = f.split(".")[0];
-                let event = require(`../../events/${f}`);
+                let event = require(`../../events/client/${f}`);
                 this.client.on(eName, event.bind(null, client));
                 console.log(`¡${f} fue cargado!`)
             });
